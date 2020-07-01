@@ -18,21 +18,33 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	//Components
+	// Components
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovement;
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* ProjectileMesh;
+	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	UParticleSystemComponent* ProjectileTrail;
 
-	//Damage
+	// Damage
 	UPROPERTY(EditDefaultsOnly, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UDamageType> DamageType;
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 	float Damage = 10.0f;
 
-	//Movement
+	// Movement
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Movement", meta = (AllowPrivateAccess = "true"))
 	float MovementSpeed = 1000.0f;
+
+	// Effects
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Effects", meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* HitParticle;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Effects", meta = (AllowPrivateAccess = "true"))
+	USoundBase* HitSound;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Effects", meta = (AllowPrivateAccess = "true"))
+	USoundBase* LaunchSound;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Effects", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UCameraShake> HitShake;
 
 	UFUNCTION()
 	void OnHit(

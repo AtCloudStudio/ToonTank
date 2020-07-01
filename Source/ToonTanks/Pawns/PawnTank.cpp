@@ -20,6 +20,7 @@ void APawnTank::BeginPlay()
 	Super::BeginPlay();
 
     PlayerControllerReference = Cast<APlayerController>(GetController());
+    bAlive = true;
 }
 
 void APawnTank::Tick(float DeltaTime)
@@ -67,5 +68,15 @@ void APawnTank::Rotate()
 void APawnTank::HandleDestruction()
 {
     Super::HandleDestruction();
-    // Hide Player TODO - Create new function
+
+    bAlive = false;
+
+    // Hide Player and disable player movement
+    SetActorHiddenInGame(true);
+    SetActorTickEnabled(false);
+}
+
+bool APawnTank::IsPlayerAlive()
+{
+    return bAlive;
 }

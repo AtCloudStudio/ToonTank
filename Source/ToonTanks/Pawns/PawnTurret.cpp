@@ -23,17 +23,18 @@ void APawnTurret::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    if (!ensure(PlayerPawn) || (PlayerPawn->GetActorLocation() - GetActorLocation()).Size() > FireRange) return;
+    // if have a PlayerPawn in range and PlayerPawn is alive, then rotate the turret to follow
+    if (!ensure(PlayerPawn) || !PlayerPawn->IsPlayerAlive() || 
+        (PlayerPawn->GetActorLocation() - GetActorLocation()).Size() > FireRange) return;
 
-    // if have a PlayerPawn in range then rotate the turret to follow
     RotateTurret(PlayerPawn->GetActorLocation());
 }
 
 void APawnTurret::CheckFireCondition()
 {
-    if (!ensure(PlayerPawn)) return;
+    // if have a PlayerPawn and it is alive and in range, then fire
+    if (!ensure(PlayerPawn) || !PlayerPawn->IsPlayerAlive()) return;
 
-    // if player is in range then fire
     if ((PlayerPawn->GetActorLocation() - GetActorLocation()).Size() <= FireRange)
     {
         Fire();

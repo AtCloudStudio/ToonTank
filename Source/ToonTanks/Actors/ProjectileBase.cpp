@@ -4,6 +4,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "particles/ParticleSystemComponent.h"
 
 AProjectileBase::AProjectileBase()
 {
@@ -17,7 +18,19 @@ AProjectileBase::AProjectileBase()
 	ProjectileMovement->InitialSpeed = MovementSpeed;
 	ProjectileMovement->MaxSpeed = MovementSpeed;
 
+	ProjectileTrail = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Projectile Trail"));
+	ProjectileTrail->SetupAttachment(RootComponent);
+
 	InitialLifeSpan = 3.0f;
+}
+
+void AProjectileBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (!ensure(LaunchSound)) return;
+
+	UGameplayStatics::PlaySoundAtLocation(this, LaunchSound, GetActorLocation());
 }
 
 void AProjectileBase::OnHit(
@@ -27,24 +40,14 @@ void AProjectileBase::OnHit(
 	FVector NormalImpulse, 
 	const FHitResult& Hit)
 {
-	 /* If for some reason can't get a valid reference to the owning class, 
-	 return as need to check against the owner */
-	if (!ensure(GetOwner())) return;
+	if (!ensure(GetOwner() || HitParticle || HitSound || HitShake) ||(
+		!OtherActor && OtherActor == this && OtherActor == GetOwner())) return;
 
-	// If the OtherActor isn't self or owner and exists, then apply damage
-	if (OtherActor != NULL && OtherActor != this && OtherActor != GetOwner())
-	{
-		UGameplayStatics::ApplyDamage(OtherActor, Damage, GetOwner()->GetInstigatorController(), this, DamageType);
-	}
-
-	// TODO make a bunch of effects here during polish phase
-
+	UGameplayStatics::ApplyDamage(OtherActor, Damage, GetOwner()->GetInstigatorController(), this, DamageType);
+	UGameplayStatics::SpawnEmitterAtLocation(this, HitParticle, GetActorLocation(), FRotator::ZeroRotator);
+	UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HitShake, 1.0f);
 	Destroy();
-}
-
-void AProjectileBase::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void AProjectileBase::Tick(float DeltaTime)

@@ -3,7 +3,9 @@
 #include "PawnBase.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "ToonTanks/Actors/ProjectileBase.h"
+#include "ToonTanks/Components/HealthComponent.h"
 
 APawnBase::APawnBase()
 {
@@ -18,6 +20,8 @@ APawnBase::APawnBase()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
 	ProjectileSpawnPoint->SetupAttachment(TurretMesh);
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 }
 
 void APawnBase::RotateTurret(FVector LookAtTarget)
@@ -37,11 +41,11 @@ void APawnBase::RotateTurret(FVector LookAtTarget)
 		FVector(LookAtTarget.X, LookAtTarget.Y, TurretMesh->GetComponentLocation().Z)));
 }
 
+// Get ProjectileSpawnPoint Location && Rotation, then spawn Projectile class at Location towards Rotation
 void APawnBase::Fire()
 {
-	if (!ProjectileClass) return;
+	if (!ensure(ProjectileClass)) return;
 
-	// Get ProjectileSpawnPoint Location && Rotation, then spawn Projectile class at Location towards Rotation
 	AProjectileBase* TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(
 		ProjectileClass, 
 		ProjectileSpawnPoint->GetComponentLocation(), 
@@ -49,12 +53,17 @@ void APawnBase::Fire()
 	TempProjectile->SetOwner(this);
 }
 
+// Universal functionality: Play death effects particle, sound and camera shake
 void APawnBase::HandleDestruction()
 {
-	// Universal functionality ---
-	// Play death effects particle, sound and camera shake
+	if (!ensure(DeathParticle || DeathSound || DeathShake)) return;
 
-	// ... Then do unique child overrides
-	// -- PawnTurret - Inform GameMode Turret died -> Then Destroy() self
-	// -- PawnTank - Inform GameMode Player died -> Then Hide() all components && stop movement Input
+	UGameplayStatics::SpawnEmitterAtLocation(this, DeathParticle, GetActorLocation(), FRotator::ZeroRotator);
+	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation());
+	GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(DeathShake, 1.0f);
+}
+
+void APawnBase::PawnDestroyed()
+{
+	HandleDestruction();
 }

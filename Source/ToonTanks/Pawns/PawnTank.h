@@ -19,6 +19,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	bool IsPlayerAlive();
+
 private:
 	UPROPERTY(VisibleAnyWhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* SpringArm;
@@ -37,6 +39,8 @@ private:
 
 	APlayerController* PlayerControllerReference;
 	FHitResult TraceHitResult;
+
+	bool bAlive;
 
 	void CalculateMoveInput(float Value);
 	void CalculateRotateInput(float Value);
